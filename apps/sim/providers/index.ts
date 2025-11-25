@@ -1,11 +1,11 @@
 import { getCostMultiplier } from '@/lib/environment'
 import { createLogger } from '@/lib/logs/console/logger'
 import type { StreamingExecution } from '@/executor/types'
+import { getProvider } from '@/providers/registry'
 import type { ProviderRequest, ProviderResponse } from '@/providers/types'
 import {
   calculateCost,
   generateStructuredOutputInstructions,
-  getProvider,
   shouldBillModelUsage,
   supportsTemperature,
 } from '@/providers/utils'

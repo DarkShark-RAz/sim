@@ -1,3 +1,4 @@
+import { a2aClientTool } from '@/tools/a2a'
 import {
   airtableCreateRecordsTool,
   airtableGetRecordTool,
@@ -732,6 +733,7 @@ import {
 
 // Registry of all available tools
 export const tools: Record<string, ToolConfig> = {
+  a2a_client: a2aClientTool,
   arxiv_search: arxivSearchTool,
   arxiv_get_paper: arxivGetPaperTool,
   arxiv_get_author_papers: arxivGetAuthorPapersTool,

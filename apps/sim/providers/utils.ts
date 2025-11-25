@@ -1,13 +1,12 @@
+/**
+ * Provider utilities - client-safe functions
+ * This file does NOT import provider implementations
+ * For server-side provider access, use @/providers/registry
+ */
+
 import { getEnv, isTruthy } from '@/lib/env'
 import { isHosted } from '@/lib/environment'
 import { createLogger } from '@/lib/logs/console/logger'
-import { anthropicProvider } from '@/providers/anthropic'
-import { azureOpenAIProvider } from '@/providers/azure-openai'
-import { cerebrasProvider } from '@/providers/cerebras'
-import { deepseekProvider } from '@/providers/deepseek'
-import { googleProvider } from '@/providers/google'
-import { groqProvider } from '@/providers/groq'
-import { mistralProvider } from '@/providers/mistral'
 import {
   getComputerUseModels,
   getEmbeddingModelPricing,
@@ -24,38 +23,39 @@ import {
   PROVIDER_DEFINITIONS,
   supportsTemperature as supportsTemperatureFromDefinitions,
   supportsToolUsageControl as supportsToolUsageControlFromDefinitions,
-  updateOllamaModels as updateOllamaModelsInDefinitions,
 } from '@/providers/models'
-import { ollamaProvider } from '@/providers/ollama'
-import { openaiProvider } from '@/providers/openai'
-import { openRouterProvider } from '@/providers/openrouter'
 import type { ProviderConfig, ProviderId, ProviderToolConfig } from '@/providers/types'
-import { vllmProvider } from '@/providers/vllm'
-import { xAIProvider } from '@/providers/xai'
 import { useCustomToolsStore } from '@/stores/custom-tools/store'
 import { useProvidersStore } from '@/stores/providers/store'
 
 const logger = createLogger('ProviderUtils')
 
 /**
- * Provider configurations - built from the comprehensive definitions
+ * Provider metadata - client-safe (no implementations)
  */
 export const providers: Record<
   ProviderId,
-  ProviderConfig & {
+  {
+    id: ProviderId
+    name: string
+    description: string
     models: string[]
     computerUseModels?: string[]
     modelPatterns?: RegExp[]
   }
 > = {
   openai: {
-    ...openaiProvider,
+    id: 'openai',
+    name: 'OpenAI',
+    description: 'OpenAI models including GPT-4 and GPT-3.5',
     models: getProviderModelsFromDefinitions('openai'),
     computerUseModels: ['computer-use-preview'],
     modelPatterns: PROVIDER_DEFINITIONS.openai.modelPatterns,
   },
   anthropic: {
-    ...anthropicProvider,
+    id: 'anthropic',
+    name: 'Anthropic',
+    description: "Anthropic's Claude models",
     models: getProviderModelsFromDefinitions('anthropic'),
     computerUseModels: getComputerUseModels().filter((model) =>
       getProviderModelsFromDefinitions('anthropic').includes(model)
@@ -63,82 +63,75 @@ export const providers: Record<
     modelPatterns: PROVIDER_DEFINITIONS.anthropic.modelPatterns,
   },
   google: {
-    ...googleProvider,
+    id: 'google',
+    name: 'Google',
+    description: 'Google Gemini models',
     models: getProviderModelsFromDefinitions('google'),
     modelPatterns: PROVIDER_DEFINITIONS.google.modelPatterns,
   },
   deepseek: {
-    ...deepseekProvider,
+    id: 'deepseek',
+    name: 'DeepSeek',
+    description: 'DeepSeek models',
     models: getProviderModelsFromDefinitions('deepseek'),
     modelPatterns: PROVIDER_DEFINITIONS.deepseek.modelPatterns,
   },
   xai: {
-    ...xAIProvider,
+    id: 'xai',
+    name: 'xAI',
+    description: 'xAI Grok models',
     models: getProviderModelsFromDefinitions('xai'),
     modelPatterns: PROVIDER_DEFINITIONS.xai.modelPatterns,
   },
   cerebras: {
-    ...cerebrasProvider,
+    id: 'cerebras',
+    name: 'Cerebras',
+    description: 'Cerebras inference',
     models: getProviderModelsFromDefinitions('cerebras'),
     modelPatterns: PROVIDER_DEFINITIONS.cerebras.modelPatterns,
   },
   groq: {
-    ...groqProvider,
+    id: 'groq',
+    name: 'Groq',
+    description: 'Groq LPU inference',
     models: getProviderModelsFromDefinitions('groq'),
     modelPatterns: PROVIDER_DEFINITIONS.groq.modelPatterns,
   },
   vllm: {
-    ...vllmProvider,
+    id: 'vllm',
+    name: 'vLLM',
+    description: 'vLLM inference server',
     models: getProviderModelsFromDefinitions('vllm'),
     modelPatterns: PROVIDER_DEFINITIONS.vllm.modelPatterns,
   },
   mistral: {
-    ...mistralProvider,
+    id: 'mistral',
+    name: 'Mistral',
+    description: 'Mistral AI models',
     models: getProviderModelsFromDefinitions('mistral'),
     modelPatterns: PROVIDER_DEFINITIONS.mistral.modelPatterns,
   },
   'azure-openai': {
-    ...azureOpenAIProvider,
+    id: 'azure-openai',
+    name: 'Azure OpenAI',
+    description: 'Azure-hosted OpenAI models',
     models: getProviderModelsFromDefinitions('azure-openai'),
     modelPatterns: PROVIDER_DEFINITIONS['azure-openai'].modelPatterns,
   },
   openrouter: {
-    ...openRouterProvider,
+    id: 'openrouter',
+    name: 'OpenRouter',
+    description: 'OpenRouter unified API',
     models: getProviderModelsFromDefinitions('openrouter'),
     modelPatterns: PROVIDER_DEFINITIONS.openrouter.modelPatterns,
   },
   ollama: {
-    ...ollamaProvider,
+    id: 'ollama',
+    name: 'Ollama',
+    description: 'Local Ollama models',
     models: getProviderModelsFromDefinitions('ollama'),
     modelPatterns: PROVIDER_DEFINITIONS.ollama.modelPatterns,
   },
-}
-
-Object.entries(providers).forEach(([id, provider]) => {
-  if (provider.initialize) {
-    provider.initialize().catch((error) => {
-      logger.error(`Failed to initialize ${id} provider`, {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
-    })
-  }
-})
-
-export function updateOllamaProviderModels(models: string[]): void {
-  updateOllamaModelsInDefinitions(models)
-  providers.ollama.models = getProviderModelsFromDefinitions('ollama')
-}
-
-export function updateVLLMProviderModels(models: string[]): void {
-  const { updateVLLMModels } = require('@/providers/models')
-  updateVLLMModels(models)
-  providers.vllm.models = getProviderModelsFromDefinitions('vllm')
-}
-
-export async function updateOpenRouterProviderModels(models: string[]): Promise<void> {
-  const { updateOpenRouterModels } = await import('@/providers/models')
-  updateOpenRouterModels(models)
-  providers.openrouter.models = getProviderModelsFromDefinitions('openrouter')
 }
 
 export function getBaseModelProviders(): Record<string, ProviderId> {
@@ -204,13 +197,20 @@ export function getProviderFromModel(model: string): ProviderId {
   return 'ollama'
 }
 
-export function getProvider(id: string): ProviderConfig | undefined {
+/**
+ * @deprecated Use getProvider from @/providers/registry for server-side access
+ * This function only returns metadata, not the full provider implementation
+ */
+export function getProvider(id: string): { id: ProviderId; name: string; description: string; models: string[] } | undefined {
   // Handle both formats: 'openai' and 'openai/chat'
   const providerId = id.split('/')[0] as ProviderId
   return providers[providerId]
 }
 
-export function getProviderConfigFromModel(model: string): ProviderConfig | undefined {
+/**
+ * @deprecated Use getProvider from @/providers/registry for server-side access
+ */
+export function getProviderConfigFromModel(model: string): { id: ProviderId; name: string; description: string; models: string[] } | undefined {
   const providerId = getProviderFromModel(model)
   return providers[providerId]
 }
