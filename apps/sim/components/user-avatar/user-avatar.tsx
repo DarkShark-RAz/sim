@@ -2,7 +2,7 @@
 
 import { type CSSProperties, useEffect, useState } from 'react'
 import Image from 'next/image'
-import { getUserColor } from '@/app/workspace/[workspaceId]/utils/get-user-color'
+import { getUserColor } from '@/app/workspace/[workspaceId]/w/utils/get-user-color'
 
 interface UserAvatarProps {
   userId: string

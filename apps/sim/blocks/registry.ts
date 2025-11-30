@@ -1,4 +1,3 @@
-import { A2ABlock } from '@/blocks/blocks/a2a'
 import { AgentBlock } from '@/blocks/blocks/agent'
 import { AirtableBlock } from '@/blocks/blocks/airtable'
 import { ApiBlock } from '@/blocks/blocks/api'
@@ -107,7 +106,6 @@ import type { BlockConfig } from '@/blocks/types'
 
 // Registry of all available blocks, alphabetically sorted
 export const registry: Record<string, BlockConfig> = {
-  a2a: A2ABlock,
   agent: AgentBlock,
   airtable: AirtableBlock,
   apollo: ApolloBlock,
