@@ -2,8 +2,8 @@
 
 import { Component, type ReactNode, useEffect } from 'react'
 import { createLogger } from '@/lib/logs/console/logger'
-import { Panel } from '@/app/workspace/[workspaceId]/components/panel/panel'
-import { SidebarNew } from '@/app/workspace/[workspaceId]/components/sidebar/sidebar-new'
+import { Panel } from '@/app/workspace/[workspaceId]/w/[workflowId]/components'
+import { SidebarNew } from '@/app/workspace/[workspaceId]/w/components/sidebar/sidebar-new'
 
 const logger = createLogger('ErrorBoundary')
 
