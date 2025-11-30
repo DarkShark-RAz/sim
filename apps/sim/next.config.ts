@@ -103,6 +103,19 @@ const nextConfig: NextConfig = {
     '@t3-oss/env-core',
     '@sim/db',
   ],
+  webpack: (config, { isServer }) => {
+    // Prevent Node.js built-in modules from being bundled on client side
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        dns: false,
+        fs: false,
+        net: false,
+        tls: false,
+      }
+    }
+    return config
+  },
   async headers() {
     return [
       {
